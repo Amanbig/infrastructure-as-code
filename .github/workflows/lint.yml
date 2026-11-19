@@ -29,10 +29,47 @@ jobs:
       - name: Helm Chart Lint
         run: helm lint helm/01-chart-structure/my-web-app
 
-      - name: Validate Kubernetes Manifests
+      - name: Terraform Validate
         run: |
-          # Dry-run validation using kubeval or basic schema validation
-          find kubernetes -name "*.yaml" -type f | while read -r file; do
-            echo "Checking syntax: $file"
-            python3 -c "import yaml; yaml.safe_load_all(open('$file'))"
+          for dir in terraform/01-basics terraform/03-environments/dev terraform/03-environments/prod; do
+            echo "Validating $dir"
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
           done
+
+      - name: Helm Template (all environments)
+        run: |
+          for f in helm/02-environments/values-*.yaml; do
+            helm template demo helm/01-chart-structure/my-web-app -f "$f" > /dev/null
+          done
+
+      - name: Kustomize Build
+        run: |
+          kubectl kustomize kubernetes/07-kustomize/overlays/dev > /dev/null
+          kubectl kustomize kubernetes/07-kustomize/overlays/prod > /dev/null
+
+      - name: Install lint tools
+        run: python3 -m pip install yamllint ansible-core
+
+      - name: YAML Lint
+        run: yamllint -c .yamllint.yml kubernetes ansible gitops observability
+
+      - name: Ansible Syntax Check
+        run: |
+          cd ansible
+          for p in playbooks/*.yml; do
+            ansible-playbook --syntax-check -i inventories/hosts.ini "$p"
+          done
+
+      - name: Dockerfile Lint (hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/01-dockerfiles/Dockerfile.python
+          failure-threshold: error
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sample images
+        run: make docker-build

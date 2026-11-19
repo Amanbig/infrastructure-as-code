@@ -1,0 +1,11 @@
+{
+  "name": "sample-node-app",
+  "version": "1.0.0",
+  "description": "Tiny zero-dependency Node.js app used to practice Dockerfile.node",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "mkdir -p dist && cp src/main.js dist/main.js",
+    "start": "node dist/main.js"
+  },
+  "license": "MIT"
+}

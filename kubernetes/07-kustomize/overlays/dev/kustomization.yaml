@@ -1,0 +1,7 @@
+# Dev overlay: reuse the base, change only what differs.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hello-dev
+namePrefix: dev-
+resources:
+  - ../../base

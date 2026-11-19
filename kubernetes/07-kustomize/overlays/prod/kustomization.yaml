@@ -1,0 +1,13 @@
+# Prod overlay: more replicas and a pinned image tag.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hello-prod
+namePrefix: prod-
+resources:
+  - ../../base
+replicas:
+  - name: hello
+    count: 3
+images:
+  - name: nginx
+    newTag: 1.25.4-alpine

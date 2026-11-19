@@ -1,20 +1,22 @@
 # 🚀 Infrastructure as Code (IaC) & Cloud Native Learning Hub
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-v24+-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.28+-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![Helm](https://img.shields.io/badge/Helm-v3+-0F1689?logo=helm&logoColor=white)](https://helm.sh/)
-[![Ansible](https://img.shields.io/badge/Ansible-v2.15+-EE0000?logo=ansible&logoColor=white)](https://www.ansible.com/)
-[![Terraform](https://img.shields.io/badge/Terraform-v1.5+-844FBA?logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![ArgoCD](https://img.shields.io/badge/ArgoCD-v2.9+-EF7B4D?logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
-[![Prometheus](https://img.shields.io/badge/Prometheus-v2.45+-E6522C?logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Docker](https://img.shields.io/badge/Docker-recommended_24+-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-recommended_1.28+-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Helm](https://img.shields.io/badge/Helm-recommended_3+-0F1689?logo=helm&logoColor=white)](https://helm.sh/)
+[![Ansible](https://img.shields.io/badge/Ansible-recommended_2.15+-EE0000?logo=ansible&logoColor=white)](https://www.ansible.com/)
+[![Terraform](https://img.shields.io/badge/Terraform-recommended_1.5+-844FBA?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-recommended_2.9+-EF7B4D?logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-recommended_2.45+-E6522C?logo=prometheus&logoColor=white)](https://prometheus.io/)
 
-Welcome to the **Infrastructure as Code (IaC) & Cloud Native Learning Hub**! This repository is designed from the ground up as a hands-on, beginner-to-advanced learning resource. Whether you are stepping into DevOps for the first time or looking for battle-tested reference configurations, you will find modular, heavily commented, production-ready code here.
+Welcome to the **Infrastructure as Code (IaC) & Cloud Native Learning Hub**! This repository is designed from the ground up as a hands-on, beginner-to-advanced learning resource. Whether you are stepping into DevOps for the first time or want clean reference examples, you will find modular, heavily commented configs here. The examples are written to **teach**; they follow good practices, but review and harden them before using anything in real production.
 
 ---
 
 ## 📚 Table of Contents
 
+- [🏁 Start Here (Beginners)](#-start-here-beginners)
+- [📖 Glossary & Extra Docs](#-glossary--extra-docs)
 - [🗺️ Complete DevOps & IaC Learning Roadmap](#️-complete-devops--iac-learning-roadmap)
 - [⚖️ Tool Comparison Matrix](#️-tool-comparison-matrix)
 - [📁 Repository Structure & Direct File Links](#-repository-structure--direct-file-links)
@@ -30,6 +32,43 @@ Welcome to the **Infrastructure as Code (IaC) & Cloud Native Learning Hub**! Thi
 - [🔒 Security & Production Best Practices](#-security--production-best-practices)
 - [🎓 Recommended Certifications & Career Paths](#-recommended-certifications--career-paths)
 - [🤝 Contributing & License](#-contributing--license)
+
+---
+
+## 🏁 Start Here (Beginners)
+
+**New to all of this? Read this section first.**
+
+### What you need
+- A terminal (Linux, macOS, or Windows with [WSL2](https://learn.microsoft.com/windows/wsl/install)), Git, and a text editor.
+- Basic command-line skills and comfort reading YAML (indent with spaces, never tabs).
+- **No cloud account is needed** to start. Docker, Kubernetes (via kind), Helm, Ansible syntax checks and `terraform/01-basics` all run locally for free.
+
+> ⚠️ **Cost warning:** the Terraform examples in `02-modules` and `03-environments` create **real AWS resources** that can cost money. Always `terraform plan` first and `terraform destroy` afterwards.
+
+### Your first 5 steps
+```bash
+git clone https://github.com/Amanbig/infrastructure-as-code.git && cd infrastructure-as-code
+make help            # list all shortcuts
+
+make docker-build    # 1. build the sample apps  ->  docker run --rm -p 3000:3000 sample-node
+make compose-up      # 2. run a multi-service stack at http://localhost:8081  (make compose-down to stop)
+make kind-up         # 3. create a local Kubernetes cluster (needs kind)
+make k8s-basics      #    deploy the basics: kubectl get pods
+make helm-template   # 4. render the Helm chart, no cluster needed
+cd terraform/01-basics && terraform init && terraform plan   # 5. Terraform, zero cost
+```
+More detail and exercises: [docs/getting-started.md](docs/getting-started.md). Something broke or want to clean up? See [docs/troubleshooting-and-cleanup.md](docs/troubleshooting-and-cleanup.md).
+
+### Which order should I learn in?
+Docker, then Kubernetes, Helm, CI/CD, GitOps and Observability form one track. **Ansible and Terraform are independent** of that track: learn them in parallel or whenever you like. The roadmap below is a suggested path, not a strict dependency chain.
+
+---
+
+## 📖 Glossary & Extra Docs
+- [Glossary](docs/glossary.md): idempotent, drift, reconciliation, TSDB and other jargon in plain English.
+- [Getting started](docs/getting-started.md) · [Troubleshooting & cleanup](docs/troubleshooting-and-cleanup.md)
+- [Sample apps](docker/00-sample-apps/README.md): tiny Node/Go/Python apps so every Dockerfile actually builds.
 
 ---
 
@@ -114,12 +153,14 @@ Follow this step-by-step path from source code to automated production delivery:
 ## 📁 Repository Structure & Direct File Links
 
 ### 🐳 1. [Docker & Containerization](docker/README.md)
+- [00-sample-apps/](docker/00-sample-apps/README.md) - Tiny Node, Go, and Python apps used as build contexts.
 - [Dockerfile.node](docker/01-dockerfiles/Dockerfile.node) - Multi-stage Node.js build with non-root user.
 - [Dockerfile.golang](docker/01-dockerfiles/Dockerfile.golang) - Ultra-minimal statically compiled Go binary on `scratch`.
 - [Dockerfile.python](docker/01-dockerfiles/Dockerfile.python) - Hardened Python multi-stage build using virtualenvs.
 - [.dockerignore](docker/01-dockerfiles/.dockerignore) - Exclusion rules preventing large or sensitive files in builds.
 - [docker-compose.yml](docker/02-compose/docker-compose.yml) - Multi-service local stack (Nginx, App, PostgreSQL, Redis).
-- [.env.example](docker/02-compose/.env.example) - Environment variable overrides for docker-compose.
+- [nginx.conf](docker/02-compose/nginx.conf) - Reverse proxy config used by the compose stack.
+- [.env.example](docker/02-compose/.env.example) - Environment variable overrides for docker-compose (copy to `.env`).
 
 ---
 
@@ -156,6 +197,8 @@ Follow this step-by-step path from source code to automated production delivery:
   - [03-pdb.yaml](kubernetes/06-advanced-and-scaling/03-pdb.yaml) - PodDisruptionBudget for high availability during drains.
   - [04-affinity-tolerations.yaml](kubernetes/06-advanced-and-scaling/04-affinity-tolerations.yaml) - NodeAffinity, PodAntiAffinity, taints, and tolerations.
   - [05-custom-resource-definition.yaml](kubernetes/06-advanced-and-scaling/05-custom-resource-definition.yaml) - CRDs and the Kubernetes Operator pattern.
+- **07. Kustomize**
+  - [07-kustomize/](kubernetes/07-kustomize/README.md) - Base + dev/prod overlays: customize plain YAML without templates.
 
 ---
 
@@ -241,34 +284,38 @@ Follow this step-by-step path from source code to automated production delivery:
 
 ## 🛠️ Tool Installation & Setup Guides
 
-### 1. Docker
-- **Docs**: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
-- **Install (Ubuntu/Debian)**: `sudo apt update && sudo apt install -y docker.io docker-compose-v2`
+Windows users: install [WSL2](https://learn.microsoft.com/windows/wsl/install) (Ubuntu) and follow the Linux steps inside it. macOS users: use [Homebrew](https://brew.sh) (`brew install <tool>`) for most tools below.
 
-### 2. Kubernetes CLI (`kubectl`)
-- **Docs**: [https://kubernetes.io/docs/tasks/tools/](https://kubernetes.io/docs/tasks/tools/)
-- **Install (Linux)**:
+### 1. Docker
+- **Docs**: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/) (Docker Desktop on macOS/Windows)
+- **Linux**: follow the official repo instructions, then run without sudo:
   ```bash
-  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  sudo usermod -aG docker $USER   # log out and back in afterwards
+  docker run hello-world          # verify
   ```
+
+### 2. Local Kubernetes cluster + `kubectl`
+- **kind** (Kubernetes in Docker, used by `make kind-up`): [install guide](https://kind.sigs.k8s.io/docs/user/quick-start/#installation). Alternative: [minikube](https://minikube.sigs.k8s.io/docs/start/).
+- **kubectl**: [https://kubernetes.io/docs/tasks/tools/](https://kubernetes.io/docs/tasks/tools/) (macOS: `brew install kubectl`).
+- Verify: `kubectl cluster-info`
 
 ### 3. Helm
-- **Docs**: [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/)
-- **Install**: `curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash`
+- **Docs**: [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/) (macOS: `brew install helm`; Debian/Ubuntu: the official apt repo).
+- Prefer package managers over piping scripts into `bash`; if you do use an install script, read it first.
 
 ### 4. Ansible
-- **Docs**: [https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-- **Install**: `python3 -m pip install --user ansible`
+- **Docs**: [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+- Easiest: `pipx install --include-deps ansible` (or `sudo apt install ansible`). You also need a Linux server reachable over SSH to run the playbooks for real; `--syntax-check` works without one.
 
 ### 5. Terraform
-- **Docs**: [https://developer.hashicorp.com/terraform/install](https://developer.hashicorp.com/terraform/install)
-- **Install**:
-  ```bash
-  wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-  sudo apt update && sudo apt install terraform
-  ```
+- **Docs**: [https://developer.hashicorp.com/terraform/install](https://developer.hashicorp.com/terraform/install) (follow the page for your OS; macOS: `brew install hashicorp/tap/terraform`).
+- AWS examples also need the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and `aws configure`.
+
+### 6. Argo CD (GitOps section)
+- Needs a running cluster. Install: [Argo CD getting started](https://argo-cd.readthedocs.io/en/stable/getting_started/).
+
+### 7. Prometheus & Grafana (Observability section)
+- Easiest on a cluster: the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart. See [observability/README.md](observability/README.md).
 
 ---
 
@@ -290,7 +337,7 @@ Follow this step-by-step path from source code to automated production delivery:
 
 ## 🎓 Recommended Certifications & Career Paths
 
-If you are pursuing certifications to validate your skills, this repository directly covers material for:
+If you are pursuing certifications to validate your skills, this repository gives you hands-on practice with topics that appear in these exams (it is not a complete exam prep course):
 
 - **Kubernetes**:
   - [CKA: Certified Kubernetes Administrator](https://www.cncf.io/certification/cka/)
@@ -299,7 +346,7 @@ If you are pursuing certifications to validate your skills, this repository dire
 - **Infrastructure as Code**:
   - [HashiCorp Certified: Terraform Associate](https://www.hashicorp.com/certification/terraform-associate)
 - **Linux & Automation**:
-  - [RHCE: Red Hat Certified Engineer (Ansible Automation)](https://www.redhat.com/en/services/certification/rhce)
+  - [RHCE: Red Hat Certified Engineer ](https://www.redhat.com/en/services/certification/rhce)
   - [LFCS: Linux Foundation Certified System Administrator](https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/)
 
 ---

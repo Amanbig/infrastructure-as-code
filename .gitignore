@@ -16,3 +16,8 @@ crash.*.log
 *.swp
 *~
 .DS_Store
+
+# Local env files
+.env
+node_modules/
+dist/

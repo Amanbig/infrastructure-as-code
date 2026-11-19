@@ -2,6 +2,7 @@ apiVersion: v2
 name: my-web-app
 description: A production-ready Helm chart for deploying microservice web applications on Kubernetes.
 type: application
+icon: https://helm.sh/img/helm.svg
 
 # This is the chart version. This version number should be incremented each time you make changes to the chart.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
@@ -16,9 +17,9 @@ keywords:
   - frontend
   - microservice
 
-home: https://github.com/learn-devops/my-web-app
+home: https://github.com/Amanbig/infrastructure-as-code
 sources:
-  - https://github.com/learn-devops/my-web-app
+  - https://github.com/Amanbig/infrastructure-as-code
 
 maintainers:
   - name: DevOps Team

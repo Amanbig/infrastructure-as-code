@@ -17,6 +17,10 @@ gitops/
 
 ---
 
+> **Using a fork?** Every manifest in `argocd/` has `repoURL: https://github.com/Amanbig/infrastructure-as-code.git`. Change it to your fork's URL before applying.
+
+---
+
 ## 🧠 The Core Principles of GitOps
 
 1. **Declarative Everything**: The entire desired system state is described declaratively in Git (manifests, Helm values, network policies).
