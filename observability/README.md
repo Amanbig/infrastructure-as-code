@@ -16,6 +16,7 @@ observability/
     │   └── prometheus.yaml     # Auto-provisioned Prometheus datasource
     └── dashboards/
         └── k8s-cluster-overview.json # Importable Grafana dashboard (CPU, RAM, Pod Restarts)
+└── loki/                       # Log aggregation: Loki + Promtail + Grafana (see loki/README.md)
 ```
 
 ---

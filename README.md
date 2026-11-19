@@ -28,6 +28,8 @@ Welcome to the **Infrastructure as Code (IaC) & Cloud Native Learning Hub**! Thi
   - [🔄 6. CI/CD Automation](#-6-cicd-automation)
   - [🐙 7. GitOps with ArgoCD](#-7-gitops-with-argocd)
   - [📊 8. Observability & Monitoring](#-8-observability--monitoring)
+  - [📦 9. Packer: Machine Images](#-9-packer-machine-images)
+  - [🔐 10. Vault: Secrets Management](#-10-vault-secrets-management)
 - [🛠️ Tool Installation & Setup Guides](#️-tool-installation--setup-guides)
 - [🔒 Security & Production Best Practices](#-security--production-best-practices)
 - [🎓 Recommended Certifications & Career Paths](#-recommended-certifications--career-paths)
@@ -147,6 +149,8 @@ Follow this step-by-step path from source code to automated production delivery:
 | **[CI/CD](cicd/README.md)** | Automated test, scan & build pipelines | Pipeline runners executing job workflows | Yes (Runner agent) | Ephemeral / Artifact caches |
 | **[GitOps](gitops/README.md)** | Pull-based cluster synchronization | In-cluster reconciler matching live state to Git | Yes (ArgoCD in-cluster controllers) | Uses Git commit tree as single source of truth |
 | **[Observability](observability/README.md)**| Metrics, alerting & telemetry | Metric scrapers pulling endpoints + TSDB | Yes (Node exporters & Prometheus) | Time-series database (TSDB) |
+| **[Packer](packer/README.md)** | Building machine/container images | Declarative HCL: source ➔ provisioners ➔ image | No | Stateless (produces image artifacts) |
+| **[Vault](vault/README.md)** | Secrets management | API server with policies, encryption, and audit logs | Yes (Vault server) | Encrypted storage backend |
 
 ---
 
@@ -279,6 +283,19 @@ Follow this step-by-step path from source code to automated production delivery:
 - [alert-rules.yaml](observability/prometheus/alert-rules.yaml) - Prometheus alerting rules (CPU overload, CrashLoopBackOff, Low Disk).
 - [prometheus.yaml (Datasource)](observability/grafana/datasources/prometheus.yaml) - Automated Prometheus datasource for Grafana.
 - [k8s-cluster-overview.json](observability/grafana/dashboards/k8s-cluster-overview.json) - Ready-to-import Grafana dashboard.
+- [loki/](observability/loki/README.md) - Log aggregation: Loki + Promtail + Grafana in one local `docker compose`.
+
+---
+
+### 📦 9. [Packer: Machine Images](packer/README.md)
+- [docker-ubuntu.pkr.hcl](packer/docker-ubuntu.pkr.hcl) - Free, local: bake a Docker image with nginx.
+- [aws-ubuntu.pkr.hcl](packer/aws-ubuntu.pkr.hcl) - Bake an AWS AMI (costs money).
+
+---
+
+### 🔐 10. [Vault: Secrets Management](vault/README.md)
+- [docker-compose.yml](vault/docker-compose.yml) - Dev-mode Vault server for practice.
+- [app-policy.hcl](vault/app-policy.hcl) - Least-privilege read-only policy.
 
 ---
 
@@ -326,7 +343,7 @@ Windows users: install [WSL2](https://learn.microsoft.com/windows/wsl/install) (
    - Never run containers as `root` (enforce `runAsNonRoot: true` in SecurityContexts).
 2. **Secrets Hygiene**:
    - Never commit raw credentials, private keys, or `.env` files to Git.
-   - Use solutions such as HashiCorp Vault, AWS Secrets Manager, or Sealed Secrets.
+   - Use solutions such as HashiCorp Vault (see [vault/](vault/README.md)), AWS Secrets Manager, or Sealed Secrets.
 3. **Idempotency & Immutability**:
    - Ensure Ansible playbooks are idempotent: test with `--check` dry-runs.
    - Prefer updating infrastructure declaratively through Terraform plans rather than manual console clicks.

@@ -37,6 +37,7 @@ kubernetes/
 │   ├── 03-clusterrole-binding.yaml
 │   └── 04-security-context.yaml
 └── 06-advanced-and-scaling/    # HPA, VPA, PDB, Affinity/Anti-Affinity, CRDs
+└── 07-kustomize/               # Base + overlays: customize plain YAML without templates
     ├── 01-hpa.yaml
     ├── 02-vpa.yaml
     ├── 03-pdb.yaml
@@ -103,6 +104,9 @@ A Kubernetes cluster consists of two main components:
 - [03-pdb.yaml](06-advanced-and-scaling/03-pdb.yaml) - PodDisruptionBudget ensuring minimum availability during maintenance/drain events.
 - [04-affinity-tolerations.yaml](06-advanced-and-scaling/04-affinity-tolerations.yaml) - NodeAffinity, PodAntiAffinity, and node taints & tolerations.
 - [05-custom-resource-definition.yaml](06-advanced-and-scaling/05-custom-resource-definition.yaml) - Extending Kubernetes with Custom Resources (CRDs) and the Operator pattern.
+
+### 07. Kustomize
+- [07-kustomize/](07-kustomize/README.md) - Base + dev/prod overlays, applied with `kubectl apply -k`.
 
 ---
 

@@ -37,6 +37,10 @@ jobs:
             terraform -chdir="$dir" validate
           done
 
+      - name: Packer Format Check
+        run: |
+          docker run --rm --entrypoint packer -v "$PWD/packer:/w" -w /w hashicorp/packer:latest fmt -check .
+
       - name: Helm Template (all environments)
         run: |
           for f in helm/02-environments/values-*.yaml; do
@@ -52,7 +56,7 @@ jobs:
         run: python3 -m pip install yamllint ansible
 
       - name: YAML Lint
-        run: yamllint -c .yamllint.yml kubernetes ansible gitops observability
+        run: yamllint -c .yamllint.yml kubernetes ansible gitops observability vault
 
       - name: Ansible Syntax Check
         run: |

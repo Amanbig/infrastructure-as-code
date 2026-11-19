@@ -8,6 +8,7 @@ Welcome to the **Docker** section. Docker packages an application and all its de
 
 ```
 docker/
+├── 00-sample-apps/            # Tiny Node/Go/Python apps used as build contexts
 ├── 01-dockerfiles/
 │   ├── Dockerfile.node        # Multi-stage Node.js build with caching and non-root user
 │   ├── Dockerfile.golang      # Ultra-minimal scratch-based Go binary container
@@ -15,6 +16,7 @@ docker/
 │   └── .dockerignore          # Exclusion rules preventing bloated builds
 └── 02-compose/
     ├── docker-compose.yml     # Multi-tier stack: Nginx proxy, Web app, Postgres, Redis
+    ├── nginx.conf             # Reverse-proxy config mounted into the proxy service
     └── .env.example           # Environment variable template
 ```
 
@@ -35,7 +37,7 @@ A standard single-stage Dockerfile bundles compilers, build SDKs, package manage
 
 ```bash
 # Build an image with a specific tag
-docker build -t my-app:1.0.0 -f 01-dockerfiles/Dockerfile.node .
+docker build -t my-app:1.0.0 -f 01-dockerfiles/Dockerfile.node 00-sample-apps/node
 
 # Run a container with port mapping and environment variables
 docker run -d --name my-running-app -p 8080:3000 -e APP_ENV=dev my-app:1.0.0

@@ -7,7 +7,7 @@ lint: ## Run the same checks as CI (helm, terraform fmt, ansible syntax, YAML)
 	helm lint helm/01-chart-structure/my-web-app
 	terraform fmt -check -recursive terraform/
 	cd ansible && for p in playbooks/*.yml; do ansible-playbook --syntax-check -i inventories/hosts.ini $$p; done
-	yamllint -c .yamllint.yml kubernetes ansible gitops observability
+	yamllint -c .yamllint.yml kubernetes ansible gitops observability vault
 
 docker-build: ## Build the three sample app images
 	docker build -t sample-node   -f docker/01-dockerfiles/Dockerfile.node   docker/00-sample-apps/node
