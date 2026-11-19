@@ -21,3 +21,8 @@ crash.*.log
 .env
 node_modules/
 dist/
+
+# Pulumi / Python
+venv/
+__pycache__/
+Pulumi.*.yaml

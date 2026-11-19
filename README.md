@@ -30,6 +30,7 @@ Welcome to the **Infrastructure as Code (IaC) & Cloud Native Learning Hub**! Thi
   - [📊 8. Observability & Monitoring](#-8-observability--monitoring)
   - [📦 9. Packer: Machine Images](#-9-packer-machine-images)
   - [🔐 10. Vault: Secrets Management](#-10-vault-secrets-management)
+  - [🧩 11. Pulumi: IaC in Real Code](#-11-pulumi-iac-in-real-code)
 - [🛠️ Tool Installation & Setup Guides](#️-tool-installation--setup-guides)
 - [🔒 Security & Production Best Practices](#-security--production-best-practices)
 - [🎓 Recommended Certifications & Career Paths](#-recommended-certifications--career-paths)
@@ -63,7 +64,7 @@ cd terraform/01-basics && terraform init && terraform plan   # 5. Terraform, zer
 More detail and exercises: [docs/getting-started.md](docs/getting-started.md). Something broke or want to clean up? See [docs/troubleshooting-and-cleanup.md](docs/troubleshooting-and-cleanup.md).
 
 ### Which order should I learn in?
-Docker, then Kubernetes, Helm, CI/CD, GitOps and Observability form one track. **Ansible and Terraform are independent** of that track: learn them in parallel or whenever you like. The roadmap below is a suggested path, not a strict dependency chain.
+Docker, then Kubernetes, Helm, CI/CD, GitOps and Observability form one track. **Ansible, Terraform (and its alternative Pulumi), Packer and Vault are independent** of that track: learn them in parallel or whenever you like. The roadmap below is a suggested path, not a strict dependency chain.
 
 ---
 
@@ -149,6 +150,7 @@ Follow this step-by-step path from source code to automated production delivery:
 | **[CI/CD](cicd/README.md)** | Automated test, scan & build pipelines | Pipeline runners executing job workflows | Yes (Runner agent) | Ephemeral / Artifact caches |
 | **[GitOps](gitops/README.md)** | Pull-based cluster synchronization | In-cluster reconciler matching live state to Git | Yes (ArgoCD in-cluster controllers) | Uses Git commit tree as single source of truth |
 | **[Observability](observability/README.md)**| Metrics, alerting & telemetry | Metric scrapers pulling endpoints + TSDB | Yes (Node exporters & Prometheus) | Time-series database (TSDB) |
+| **[Pulumi](pulumi/README.md)** | Cloud infrastructure provisioning (in Python/TS/Go) | Declarative resources written in real programming languages | No (Calls cloud APIs) | Stateful (Pulumi Cloud, local, or S3 backend) |
 | **[Packer](packer/README.md)** | Building machine/container images | Declarative HCL: source ➔ provisioners ➔ image | No | Stateless (produces image artifacts) |
 | **[Vault](vault/README.md)** | Secrets management | API server with policies, encryption, and audit logs | Yes (Vault server) | Encrypted storage backend |
 
@@ -296,6 +298,11 @@ Follow this step-by-step path from source code to automated production delivery:
 ### 🔐 10. [Vault: Secrets Management](vault/README.md)
 - [docker-compose.yml](vault/docker-compose.yml) - Dev-mode Vault server for practice.
 - [app-policy.hcl](vault/app-policy.hcl) - Least-privilege read-only policy.
+
+---
+
+### 🧩 11. [Pulumi: IaC in Real Code](pulumi/README.md)
+- [01-docker-python/](pulumi/01-docker-python/__main__.py) - Run an nginx container with Python. Free, no cloud account (Terraform alternative).
 
 ---
 

@@ -1,0 +1,6 @@
+name: learn-pulumi
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: Run an nginx container with Python (free, local, no cloud account needed)
