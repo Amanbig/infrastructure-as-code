@@ -49,7 +49,7 @@ jobs:
           kubectl kustomize kubernetes/07-kustomize/overlays/prod > /dev/null
 
       - name: Install lint tools
-        run: python3 -m pip install yamllint ansible-core
+        run: python3 -m pip install yamllint ansible
 
       - name: YAML Lint
         run: yamllint -c .yamllint.yml kubernetes ansible gitops observability
