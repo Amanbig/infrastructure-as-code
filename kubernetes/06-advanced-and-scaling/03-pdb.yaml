@@ -1,0 +1,28 @@
+# ==============================================================================
+# Kubernetes Advanced: 03 - PodDisruptionBudget (PDB)
+# ==============================================================================
+# What is a PodDisruptionBudget?
+# PDB limits the number of Pods of a replicated application that are down
+# simultaneously from voluntary disruptions (e.g. node drain, cluster upgrades,
+# node maintenance, cluster autoscaler evictions).
+#
+# (Note: Involuntary disruptions like hardware failure cannot be prevented by PDBs,
+# but PDBs guarantee high availability during maintenance windows).
+#
+# Configurations:
+# - minAvailable: e.g. "2" or "80%" (At least this number/percent must remain running)
+# - maxUnavailable: e.g. "1" or "10%" (At most this number/percent can be taken down)
+# (Use either minAvailable OR maxUnavailable, not both).
+# ==============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: webapp-pdb
+  namespace: default
+spec:
+  # Guarantee that at least 2 pods are always available during drains
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: webapp

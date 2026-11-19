@@ -1,0 +1,59 @@
+# ==============================================================================
+# Kubernetes Networking: 01 - ClusterIP Service (Default)
+# ==============================================================================
+# What is a ClusterIP Service?
+# Exposes the Service on an internal IP in the cluster. This makes the Service
+# reachable ONLY from within the cluster. This is the default ServiceType.
+#
+# How it works:
+# Kubernetes assigns a virtual IP (VIP) to the service. Kube-proxy configures
+# iptables/IPVS to load balance traffic destined for the ClusterIP across the
+# pods matching the selector.
+#
+# Commands:
+#   kubectl apply -f 01-clusterip-service.yaml
+#   kubectl get svc backend-service
+#   kubectl get endpoints backend-service
+# ==============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: default
+  labels:
+    app: backend-api
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-api # Directs traffic to pods with label 'app: backend-api'
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80         # Port exposed on the ClusterIP
+      targetPort: 8080 # Port where the container listens
+---
+# Demo Deployment backing the service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+        - name: api
+          image: hashicorp/http-echo:0.2.3
+          args:
+            - "-text=Hello from Backend API Pod!"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080

@@ -1,0 +1,70 @@
+# ==============================================================================
+# Kubernetes Config & Storage: 03 - StorageClass, PV, and PVC
+# ==============================================================================
+# What are PV and PVC?
+# - PersistentVolume (PV): A piece of storage in the cluster provisioned by an
+#   administrator or dynamically using Storage Classes.
+# - PersistentVolumeClaim (PVC): A request for storage by a user/pod. Similar to
+#   how Pods consume CPU/RAM, PVCs consume PV storage.
+#
+# Access Modes:
+# - ReadWriteOnce (RWO): Can be mounted read-write by a single node.
+# - ReadOnlyMany  (ROX): Can be mounted read-only by many nodes.
+# - ReadWriteMany (RWX): Can be mounted read-write by many nodes (e.g. NFS, AWS EFS).
+# ==============================================================================
+
+# 1. StorageClass: Defines the provisioner and volume parameters for dynamic provisioning
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: kubernetes.io/no-provisioner # In cloud: ebs.csi.aws.com or pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain # Retain vs Delete when PVC is deleted
+---
+# 2. PersistentVolume: Pre-provisioned physical storage (Manual Provisioning Example)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual-pv-storage
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast-ssd
+  hostPath:
+    path: /mnt/data/learning # For local testing / kind / minikube
+---
+# 3. PersistentVolumeClaim: Request made by applications for storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-data-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 5Gi
+---
+# 4. Pod using the PVC
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storage-consumer-pod
+spec:
+  volumes:
+    - name: persistent-storage
+      persistentVolumeClaim:
+        claimName: web-data-pvc
+  containers:
+    - name: data-writer
+      image: alpine:latest
+      command: ["/bin/sh", "-c", "echo 'Persistence Works!' >> /data/test.txt; sleep 3600"]
+      volumeMounts:
+        - name: persistent-storage
+          mountPath: /data

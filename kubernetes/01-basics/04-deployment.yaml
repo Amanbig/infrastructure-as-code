@@ -1,0 +1,96 @@
+# ==============================================================================
+# Kubernetes Basics: 04 - Deployment Manifest (Production-Ready)
+# ==============================================================================
+# What is a Deployment?
+# A Deployment provides declarative updates for Pods and ReplicaSets. You describe
+# a desired state in a Deployment, and the Deployment Controller changes the
+# actual state to the desired state at a controlled rate (e.g. Rolling Updates, Rollbacks).
+#
+# Commands to test this manifest:
+#   kubectl apply -f 04-deployment.yaml
+#   kubectl get deployments
+#   kubectl rollout status deployment/webapp-deployment
+#   kubectl rollout history deployment/webapp-deployment
+#   # Update image to trigger rolling update:
+#   kubectl set image deployment/webapp-deployment webapp=nginx:1.26-alpine
+#   # Undo rollout if something goes wrong:
+#   kubectl rollout undo deployment/webapp-deployment
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+  namespace: default
+  labels:
+    app: webapp
+    tier: frontend
+spec:
+  # Desired number of pod instances
+  replicas: 3
+
+  # Revision history limit keeps past ReplicaSets for easy rollbacks
+  revisionHistoryLimit: 10
+
+  # Update Strategy: RollingUpdate (zero downtime) vs Recreate (kill all then recreate)
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1         # Can create 1 extra pod above replica count during update (25-30% standard)
+      maxUnavailable: 0   # Ensures 100% availability during rolling update
+
+  selector:
+    matchLabels:
+      app: webapp
+      tier: frontend
+
+  template:
+    metadata:
+      labels:
+        app: webapp
+        tier: frontend
+    spec:
+      containers:
+        - name: webapp
+          image: nginx:1.25-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-port
+              containerPort: 80
+
+          # Readiness Probe: Determines if container is ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Liveness Probe: Determines if container is alive or needs a restart
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Startup Probe: Useful for legacy/slow-starting containers before liveness kicks in
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 10
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

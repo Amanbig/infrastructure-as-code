@@ -1,0 +1,48 @@
+---
+# ==============================================================================
+# Ansible Playbook 03: Idempotent Nginx Deployment with Handlers
+# ==============================================================================
+# What are Handlers?
+# Handlers are special tasks that run only when notified by another task that
+# reported a "changed" status. This prevents unnecessary service restarts!
+# ==============================================================================
+
+- name: Deploy and configure Nginx Web Server
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Ensure Nginx is installed
+      ansible.builtin.apt:
+        name: "{{ webserver_package | default('nginx') }}"
+        state: present
+        update_cache: true
+
+    - name: Ensure document root directory exists
+      ansible.builtin.file:
+        path: "{{ webserver_doc_root }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Deploy customized index.html landing page
+      ansible.builtin.template:
+        src: ../roles/webserver/templates/index.html.j2
+        dest: "{{ webserver_doc_root }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Ensure Nginx service is running and enabled at boot
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

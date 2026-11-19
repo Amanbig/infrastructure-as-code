@@ -1,0 +1,47 @@
+# ==============================================================================
+# Environment Override: Production (values-prod.yaml)
+# ==============================================================================
+# Usage:
+#   helm upgrade --install my-app ../01-chart-structure/my-web-app -f values-prod.yaml -n prod --create-namespace
+# ==============================================================================
+
+replicaCount: 3
+
+image:
+  tag: "1.25.4-alpine"
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 12
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+env:
+  APP_ENV: "production"
+  LOG_LEVEL: "warn"
+  CACHE_ENABLED: "true"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: app.example.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: app-tls-cert
+      hosts:
+        - app.example.com

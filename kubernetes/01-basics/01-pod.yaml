@@ -1,0 +1,66 @@
+# ==============================================================================
+# Kubernetes Basics: 01 - Pod Manifest
+# ==============================================================================
+# What is a Pod?
+# A Pod is the smallest deployable unit of computing that you can create and manage
+# in Kubernetes. A Pod encapsulates one or more containers, storage resources,
+# a unique network IP, and options that govern how the container(s) should run.
+#
+# Commands to test this manifest:
+#   kubectl apply -f 01-pod.yaml
+#   kubectl get pods -o wide
+#   kubectl describe pod basic-nginx-pod
+#   kubectl logs basic-nginx-pod
+#   kubectl port-forward pod/basic-nginx-pod 8080:80
+#   kubectl delete -f 01-pod.yaml
+# ==============================================================================
+
+apiVersion: v1
+kind: Pod
+metadata:
+  # Unique name of the pod within the namespace
+  name: basic-nginx-pod
+  namespace: default
+  # Labels are key-value pairs attached to objects, used for organization and selection
+  labels:
+    app: webserver
+    tier: frontend
+    environment: learning
+  # Annotations store non-identifying metadata (can be structured or large)
+  annotations:
+    description: "Introductory beginner Pod running Nginx web server"
+    maintainer: "devops-learner@example.com"
+spec:
+  # Restart policy for all containers within the pod: Always, OnFailure, Never
+  restartPolicy: Always
+
+  containers:
+    - name: nginx-container
+      # Container image from container registry (e.g., Docker Hub)
+      image: nginx:1.25-alpine
+      # Always pull image or IfNotPresent
+      imagePullPolicy: IfNotPresent
+
+      # Ports exposed by the container (primarily informational/documentation)
+      ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+
+      # Environment variables injected into the container
+      env:
+        - name: APP_ENV
+          value: "development"
+        - name: APP_OWNER
+          value: "Antigravity-DevOps"
+
+      # Compute resource requests and limits (Crucial for production stability)
+      resources:
+        # Minimum resources guaranteed by the Kubernetes scheduler
+        requests:
+          memory: "64Mi"
+          cpu: "50m"       # 50 millicores = 0.05 CPU core
+        # Maximum resources the container is allowed to consume
+        limits:
+          memory: "128Mi"
+          cpu: "200m"      # 200 millicores = 0.2 CPU core

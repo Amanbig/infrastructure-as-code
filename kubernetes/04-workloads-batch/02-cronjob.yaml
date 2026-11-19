@@ -1,0 +1,60 @@
+# ==============================================================================
+# Kubernetes Workloads: 02 - CronJob Manifest
+# ==============================================================================
+# What is a CronJob?
+# A CronJob creates Jobs on a repeating schedule based on cron syntax.
+#
+# Cron format syntax:
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │
+# * * * * *
+#
+# Use cases:
+# - Nightly backups
+# - Periodic email digests
+# - Cache invalidation and cleanup tasks
+# ==============================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-backup-cronjob
+  namespace: default
+spec:
+  # Schedule: Run every night at midnight UTC (00:00)
+  schedule: "0 0 * * *"
+
+  # Timezone support (Kubernetes 1.27+)
+  timeZone: "Etc/UTC"
+
+  # Concurrency policy: Allow (concurrent runs), Forbid (skip if previous still running), Replace
+  concurrencyPolicy: Forbid
+
+  # How many successful/failed jobs to keep in history
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup-runner
+              image: alpine:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "[$(date)] Starting automated database backup..."
+                  sleep 10
+                  echo "[$(date)] Backup completed and uploaded to S3!"
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "64Mi"

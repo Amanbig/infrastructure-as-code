@@ -1,0 +1,61 @@
+# ==============================================================================
+# Kubernetes Workloads: 01 - Job Manifest
+# ==============================================================================
+# What is a Job?
+# A Job creates one or more Pods and will continue to retry execution of the Pods
+# until a specified number of them successfully terminate.
+# Unlike Deployments (which expect containers to run indefinitely), Jobs expect
+# the container to finish with exit code 0.
+#
+# Use cases:
+# - Database migrations
+# - One-time data processing / ETL
+# - Batch computation, reports generation
+# ==============================================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-migration-job
+  namespace: default
+spec:
+  # Number of retries before marking the job as failed
+  backoffLimit: 4
+
+  # Total successful pod completions needed
+  completions: 1
+
+  # Number of pods to run concurrently
+  parallelism: 1
+
+  # Time in seconds before the Job is automatically terminated if not finished
+  activeDeadlineSeconds: 300
+
+  # Automatically clean up finished job after 100 seconds
+  ttlSecondsAfterFinished: 100
+
+  template:
+    metadata:
+      labels:
+        job: db-migration
+    spec:
+      # For Jobs, restartPolicy can only be OnFailure or Never (NOT Always)
+      restartPolicy: OnFailure
+
+      containers:
+        - name: migrator
+          image: busybox:1.36
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting database schema migration..."
+              sleep 5
+              echo "Applying migration 001_create_users_table.sql"
+              sleep 2
+              echo "Database migration finished successfully!"
+              exit 0
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"

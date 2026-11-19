@@ -1,0 +1,75 @@
+# ==============================================================================
+# Kubernetes Security: 04 - Hardened SecurityContext (Production Standard)
+# ==============================================================================
+# Why Hardening Matters:
+# By default, containers run as root (UID 0), with a writable root filesystem,
+# and default Linux capabilities. If compromised, an attacker has high leverage.
+#
+# Best Practices implemented here:
+# - runAsNonRoot: true (enforces non-root user execution)
+# - readOnlyRootFilesystem: true (prevents attackers from modifying binaries or writing malware)
+# - allowPrivilegeEscalation: false (prevents setuid binary exploits)
+# - capabilities drop ALL (strips all default Linux capabilities)
+# - seccompProfile: RuntimeDefault (enforces kernel syscall filtering)
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hardened-secure-app
+  namespace: default
+  labels:
+    app: secure-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: secure-app
+  template:
+    metadata:
+      labels:
+        app: secure-app
+    spec:
+      # Pod-level security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: app
+          image: nginxinc/nginx-unprivileged:1.25-alpine # Unprivileged image runs on port 8080 by default
+          ports:
+            - containerPort: 8080
+
+          # Container-level security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Ephemeral writable directories for temp caches/pids needed by unprivileged nginx
+          volumeMounts:
+            - name: tmp-dir
+              mountPath: /tmp
+            - name: cache-dir
+              mountPath: /var/cache/nginx
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+      volumes:
+        - name: tmp-dir
+          emptyDir: {}
+        - name: cache-dir
+          emptyDir: {}

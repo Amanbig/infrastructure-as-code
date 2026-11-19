@@ -1,0 +1,37 @@
+---
+# ==============================================================================
+# Ansible Playbook 01: Connectivity Verification & Base Setup
+# ==============================================================================
+# Commands:
+#   ansible-playbook -i inventories/hosts.ini playbooks/01-ping-and-setup.yml --check # Dry run
+#   ansible-playbook -i inventories/hosts.ini playbooks/01-ping-and-setup.yml
+# ==============================================================================
+
+- name: Verify connectivity and bootstrap baseline server configuration
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ping all target hosts
+      ansible.builtin.ping:
+
+    - name: Display detected OS distribution and version
+      ansible.builtin.debug:
+        msg: "Target {{ inventory_hostname }} is running {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Ensure timezone is configured to UTC
+      community.general.timezone:
+        name: "{{ timezone | default('UTC') }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Update apt cache on Debian/Ubuntu systems
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install common baseline system utilities
+      ansible.builtin.package:
+        name: "{{ system_packages }}"
+        state: present

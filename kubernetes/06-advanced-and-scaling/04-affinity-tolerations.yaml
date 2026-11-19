@@ -1,0 +1,67 @@
+# ==============================================================================
+# Kubernetes Advanced: 04 - Affinity, Anti-Affinity, Taints and Tolerations
+# ==============================================================================
+# Controlling Pod Scheduling:
+# 1. NodeAffinity: Attracts Pods to specific Nodes (e.g., GPU nodes, compute-optimized).
+# 2. PodAffinity: Co-locates Pods with other Pods (e.g. backend with cache).
+# 3. PodAntiAffinity: Spreads Pods across nodes or availability zones (High Availability).
+# 4. Taints & Tolerations: Allows a Node to repel a set of Pods unless the Pod has matching toleration.
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ha-distributed-app
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: distributed-web
+  template:
+    metadata:
+      labels:
+        app: distributed-web
+    spec:
+      # Tolerations: Allow this pod to run on nodes with dedicated taints
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "high-traffic"
+          effect: "NoSchedule"
+
+      affinity:
+        # 1. Node Affinity: Prefer running on worker nodes with SSD storage
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values: ["linux"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: disktype
+                    operator: In
+                    values: ["ssd"]
+
+        # 2. Pod Anti-Affinity: Spread pods across different physical nodes
+        # Never place two pods of this app on the same node!
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values: ["distributed-web"]
+              topologyKey: "kubernetes.io/hostname"
+
+      containers:
+        - name: web
+          image: nginx:1.25-alpine
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"

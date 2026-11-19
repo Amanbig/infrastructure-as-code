@@ -1,0 +1,39 @@
+# ==============================================================================
+# Environment Override: Staging (values-staging.yaml)
+# ==============================================================================
+# Usage:
+#   helm upgrade --install my-app ../01-chart-structure/my-web-app -f values-staging.yaml -n staging --create-namespace
+# ==============================================================================
+
+replicaCount: 2
+
+image:
+  tag: "1.25.4-alpine"
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+
+env:
+  APP_ENV: "staging"
+  LOG_LEVEL: "info"
+  CACHE_ENABLED: "true"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: staging.example.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific

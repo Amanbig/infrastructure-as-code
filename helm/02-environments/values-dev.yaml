@@ -1,0 +1,30 @@
+# ==============================================================================
+# Environment Override: Development (values-dev.yaml)
+# ==============================================================================
+# Usage:
+#   helm install my-app ../01-chart-structure/my-web-app -f values-dev.yaml -n dev --create-namespace
+# ==============================================================================
+
+replicaCount: 1
+
+image:
+  tag: "1.25.4-alpine"
+
+resources:
+  requests:
+    cpu: "25m"
+    memory: "32Mi"
+  limits:
+    cpu: "100m"
+    memory: "64Mi"
+
+autoscaling:
+  enabled: false
+
+env:
+  APP_ENV: "development"
+  LOG_LEVEL: "debug"
+  CACHE_ENABLED: "false"
+
+ingress:
+  enabled: false

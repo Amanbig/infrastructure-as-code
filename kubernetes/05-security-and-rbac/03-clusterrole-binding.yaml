@@ -1,0 +1,37 @@
+# ==============================================================================
+# Kubernetes Security & RBAC: 03 - ClusterRole and ClusterRoleBinding
+# ==============================================================================
+# What is a ClusterRole?
+# While a Role grants access to a single namespace, a ClusterRole is cluster-scoped.
+# It can grant access to:
+# 1. Cluster-scoped resources (e.g. Nodes, PersistentVolumes)
+# 2. Non-resource endpoints (e.g. /healthz, /metrics)
+# 3. Namespaced resources across ALL namespaces in the cluster
+#
+# ClusterRoleBinding binds a ClusterRole to subjects cluster-wide.
+# ==============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # Cluster-scoped resources have NO namespace field
+  name: node-and-pv-viewer
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "persistentvolumes"]
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics", "/healthz"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: global-node-viewer-binding
+subjects:
+  - kind: ServiceAccount
+    name: app-service-account
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: node-and-pv-viewer
+  apiGroup: rbac.authorization.k8s.io

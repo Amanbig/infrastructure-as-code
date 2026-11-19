@@ -1,0 +1,21 @@
+---
+# ==============================================================================
+# Ansible Master Playbook: site.yml
+# ==============================================================================
+# Orchestrates multiple plays across server groups using modular roles.
+#
+# Usage:
+#   ansible-playbook -i inventories/hosts.ini playbooks/site.yml
+# ==============================================================================
+
+- name: Apply baseline configuration across entire fleet
+  hosts: all
+  become: true
+  roles:
+    - role: common
+
+- name: Configure Web Application Tier
+  hosts: webservers
+  become: true
+  roles:
+    - role: webserver

@@ -1,0 +1,54 @@
+# ==============================================================================
+# Kubernetes Networking: 04 - Ingress Manifest
+# ==============================================================================
+# What is an Ingress?
+# Ingress exposes HTTP and HTTPS routes from outside the cluster to services
+# within the cluster. Traffic routing is controlled by rules defined on the
+# Ingress resource.
+#
+# Prerequisite: You must have an Ingress Controller running in your cluster
+# (such as ingress-nginx, Traefik, or AWS ALB Ingress Controller).
+#
+# Features demonstrated:
+# - Path-based routing (/api -> api-service, / -> frontend-service)
+# - Host-based routing (app.example.com)
+# - TLS Termination (HTTPS using a Secret)
+# ==============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-application-ingress
+  namespace: default
+  annotations:
+    # Ingress class or controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # cert-manager integration for automatic Let's Encrypt certificates
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - myapp.example.com
+      secretName: myapp-tls-cert  # Secret containing tls.crt and tls.key
+  rules:
+    - host: myapp.example.com
+      http:
+        paths:
+          # Frontend route
+          - path: /()(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+          # Backend API route
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80

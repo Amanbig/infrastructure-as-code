@@ -1,0 +1,4 @@
+# Example tfvars file: copy to terraform.tfvars to override default variables
+project_name = "awesome-cloud-app"
+environment  = "dev"
+owner_email  = "admin@example.com"

@@ -1,0 +1,40 @@
+# ==============================================================================
+# Kubernetes Advanced: 02 - Vertical Pod Autoscaler (VPA)
+# ==============================================================================
+# What is VPA?
+# While HPA scales the number of replicas horizontally, Vertical Pod Autoscaler
+# automatically adjusts the CPU and Memory *requests* and *limits* of pods
+# based on real-time usage analysis.
+#
+# Update Modes:
+# - "Off": Recommends values without changing pod configs (Safest for observability)
+# - "Initial": Applies recommendations only when a pod is newly created
+# - "Recreate": Evicts running pods and recreates them with new CPU/memory values
+# - "Auto": Automatically resizes (currently uses Recreate under the hood)
+#
+# Prerequisite: VPA operator must be installed in the cluster.
+# Note: Do NOT use HPA on CPU/memory simultaneously with VPA on CPU/memory!
+# ==============================================================================
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: webapp-vpa
+  namespace: default
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: webapp-deployment
+  updatePolicy:
+    updateMode: "Off" # Great starting point: observe recommendations via `kubectl describe vpa webapp-vpa`
+  resourcePolicy:
+    containerPolicies:
+      - containerName: webapp
+        minAllowed:
+          cpu: "50m"
+          memory: "64Mi"
+        maxAllowed:
+          cpu: "2"
+          memory: "4Gi"
+        controlledResources: ["cpu", "memory"]

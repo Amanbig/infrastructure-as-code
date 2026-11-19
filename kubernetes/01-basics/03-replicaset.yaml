@@ -1,0 +1,54 @@
+# ==============================================================================
+# Kubernetes Basics: 03 - ReplicaSet Manifest
+# ==============================================================================
+# What is a ReplicaSet?
+# A ReplicaSet's purpose is to maintain a stable set of replica Pods running at
+# any given time. It guarantees the availability of a specified number of identical Pods.
+#
+# Note: In real-world production, you almost always manage ReplicaSets via
+# Deployments instead of creating them directly, because Deployments manage updates!
+#
+# Commands to test this manifest:
+#   kubectl apply -f 03-replicaset.yaml
+#   kubectl get replicasets
+#   kubectl get pods -l app=frontend-replicaset
+#   kubectl scale rs frontend-replicaset --replicas=5
+#   kubectl delete -f 03-replicaset.yaml
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend-replicaset
+  labels:
+    app: frontend-replicaset
+spec:
+  # Desired number of pod replicas
+  replicas: 3
+
+  # Selector tells the ReplicaSet which pods to manage
+  selector:
+    matchLabels:
+      app: frontend-worker
+      env: demo
+
+  # Pod template: defines what each replica looks like
+  template:
+    metadata:
+      labels:
+        # These labels MUST match the selector above!
+        app: frontend-worker
+        env: demo
+    spec:
+      containers:
+        - name: web-worker
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

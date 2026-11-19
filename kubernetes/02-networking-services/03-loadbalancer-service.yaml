@@ -1,0 +1,54 @@
+# ==============================================================================
+# Kubernetes Networking: 03 - LoadBalancer Service
+# ==============================================================================
+# What is a LoadBalancer Service?
+# Exposes the Service externally using a cloud provider's load balancer (AWS NLB/ALB,
+# GCP Cloud Load Balancing, Azure Load Balancer).
+# NodePort and ClusterIP Services, to which the external load balancer routes,
+# are automatically created.
+#
+# Commands:
+#   kubectl apply -f 03-loadbalancer-service.yaml
+#   kubectl get svc loadbalancer-service -w
+# ==============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadbalancer-service
+  namespace: default
+  annotations:
+    # Example cloud provider specific annotations:
+    # service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    # service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+  labels:
+    app: public-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: public-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: public-app
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: public-app
+  template:
+    metadata:
+      labels:
+        app: public-app
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80

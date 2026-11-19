@@ -1,0 +1,67 @@
+---
+# ==============================================================================
+# Ansible Playbook 04: Server Security Hardening (UFW & SSH)
+# ==============================================================================
+# Hardening features:
+# - Disables SSH root login
+# - Enforces SSH key-based authentication
+# - Configures UFW firewall (allow SSH, HTTP, HTTPS; deny all else)
+# ==============================================================================
+
+- name: Security Hardening for Linux Servers
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Disable SSH password authentication (Force SSH keys)
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: Reload SSHD
+
+    - name: Disable SSH root login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+        state: present
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: Reload SSHD
+
+    - name: Set UFW default incoming policy to deny
+      community.general.ufw:
+        direction: incoming
+        default: deny
+
+    - name: Set UFW default outgoing policy to allow
+      community.general.ufw:
+        direction: outgoing
+        default: allow
+
+    - name: Allow SSH traffic through UFW
+      community.general.ufw:
+        rule: allow
+        port: '22'
+        proto: tcp
+
+    - name: Allow HTTP and HTTPS traffic
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - '80'
+        - '443'
+
+    - name: Enable UFW firewall
+      community.general.ufw:
+        state: enabled
+
+  handlers:
+    - name: Reload SSHD
+      ansible.builtin.service:
+        name: sshd
+        state: reloaded

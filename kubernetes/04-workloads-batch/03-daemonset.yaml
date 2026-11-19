@@ -1,0 +1,77 @@
+# ==============================================================================
+# Kubernetes Workloads: 03 - DaemonSet Manifest
+# ==============================================================================
+# What is a DaemonSet?
+# A DaemonSet ensures that all (or some) Nodes run a copy of a Pod.
+# As nodes are added to the cluster, Pods are added to them. As nodes are removed
+# from the cluster, those Pods are garbage collected.
+#
+# Use cases:
+# - Running cluster storage daemons (e.g. ceph, glusterd)
+# - Running logs collection daemons on every node (e.g. fluentd, logstash)
+# - Running node monitoring daemons on every node (e.g. Prometheus Node Exporter)
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter-daemonset
+  namespace: kube-system
+  labels:
+    app: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      # Toleration to allow running on master/control-plane nodes if desired
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+
+      hostNetwork: true
+      hostPID: true
+
+      containers:
+        - name: node-exporter
+          image: prom/node-exporter:v1.7.0
+          args:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--path.rootfs=/host/root"
+          ports:
+            - containerPort: 9100
+              hostPort: 9100
+              name: metrics
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "150m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: root
+              mountPath: /host/root
+              readOnly: true
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: root
+          hostPath:
+            path: /

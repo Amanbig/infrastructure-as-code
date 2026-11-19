@@ -1,0 +1,25 @@
+# ==============================================================================
+# Terraform Remote State Management (AWS S3 + DynamoDB Locking)
+# ==============================================================================
+# Why Remote State?
+# 1. Team Collaboration: Shared state file accessible by the entire team.
+# 2. State Locking: Uses DynamoDB to lock state during applies, preventing
+#    two engineers or CI/CD pipelines from corrupting state simultaneously.
+# 3. Security & Versioning: Stores state in encrypted S3 bucket with versioning
+#    enabled so you can rollback if state corruption occurs.
+#
+# Usage:
+# 1. Create S3 bucket with versioning and SSE enabled.
+# 2. Create DynamoDB table with Primary Key named 'LockID' (String).
+# 3. Rename this file to backend.tf and run: terraform init -migrate-state
+# ==============================================================================
+
+terraform {
+  backend "s3" {
+    bucket         = "my-company-terraform-state-bucket"
+    key            = "environments/production/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-locks"
+  }
+}

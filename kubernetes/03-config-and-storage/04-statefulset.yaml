@@ -1,0 +1,62 @@
+# ==============================================================================
+# Kubernetes Config & Storage: 04 - StatefulSet
+# ==============================================================================
+# What is a StatefulSet?
+# Unlike Deployments where pods are interchangeable and ephemeral, StatefulSets
+# are designed for stateful applications (Databases, Redis, Kafka, Cassandra).
+#
+# Key Features:
+# 1. Stable, unique network identifiers: Pods get names like `redis-cluster-0`, `redis-cluster-1`
+# 2. Ordered deployment and scaling (0 -> 1 -> 2)
+# 3. Dedicated persistent storage: Each pod gets its OWN PersistentVolumeClaim
+#    generated from `volumeClaimTemplates`
+# 4. Requires a Headless Service (`clusterIP: None`) for peer discovery
+# ==============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-headless-service
+  labels:
+    app: redis-cluster
+spec:
+  ports:
+    - port: 6379
+      name: redis
+  clusterIP: None # Headless service: Returns pod IPs directly rather than load balancing
+  selector:
+    app: redis-cluster
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+spec:
+  serviceName: "redis-headless-service"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-cluster
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  # Each replica gets its own dedicated PVC dynamically provisioned
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi

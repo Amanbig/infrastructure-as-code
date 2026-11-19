@@ -1,0 +1,25 @@
+apiVersion: v2
+name: my-web-app
+description: A production-ready Helm chart for deploying microservice web applications on Kubernetes.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes to the chart.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 1.0.0
+
+# This is the version number of the application being deployed.
+appVersion: "1.25.4"
+
+keywords:
+  - webapp
+  - nginx
+  - frontend
+  - microservice
+
+home: https://github.com/learn-devops/my-web-app
+sources:
+  - https://github.com/learn-devops/my-web-app
+
+maintainers:
+  - name: DevOps Team
+    email: devops@example.com

@@ -1,0 +1,11 @@
+# Global variables applicable to all managed hosts
+timezone: "UTC"
+admin_email: "devops-alerts@example.com"
+system_packages:
+  - curl
+  - wget
+  - git
+  - vim
+  - htop
+  - ufw
+  - unzip

@@ -1,0 +1,6 @@
+# Variables specific to hosts in the [webservers] group
+webserver_package: nginx
+webserver_port: 80
+webserver_doc_root: /var/www/html
+site_title: "Welcome to Infrastructure as Code Hub"
+max_keepalive_requests: 100

@@ -1,0 +1,29 @@
+---
+# tasks file for webserver role
+- name: Install Nginx web server
+  ansible.builtin.apt:
+    name: "{{ webserver_package | default('nginx') }}"
+    state: present
+
+- name: Create document root
+  ansible.builtin.file:
+    path: "{{ webserver_doc_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Render landing page from Jinja2 template
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ webserver_doc_root }}/index.html"
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  notify: Restart Nginx
+
+- name: Ensure Nginx is started and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

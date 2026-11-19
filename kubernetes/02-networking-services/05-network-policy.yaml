@@ -1,0 +1,65 @@
+# ==============================================================================
+# Kubernetes Networking: 05 - NetworkPolicy (Zero-Trust Security)
+# ==============================================================================
+# What is a NetworkPolicy?
+# By default, all Pods in Kubernetes can communicate with each other freely
+# (non-isolated). NetworkPolicies let you specify how groups of Pods are allowed
+# to communicate with each other and with other network endpoints.
+#
+# Prerequisite: Requires a CNI plugin that supports NetworkPolicies (e.g., Calico,
+# Cilium, Weave Net, AWS-VPC CNI with network policy enabled).
+#
+# This policy:
+# - Applies to backend pods
+# - Allows ingress ONLY from frontend pods on port 8080
+# - Allows egress ONLY to database pods on port 5432 and DNS on port 53
+# ==============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-security-policy
+  namespace: default
+spec:
+  # Select the pods to which this policy applies
+  podSelector:
+    matchLabels:
+      app: backend-api
+
+  # Which traffic types are restricted by this policy
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Allowed incoming traffic
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend-web
+      ports:
+        - protocol: TCP
+          port: 8080
+
+  # Allowed outgoing traffic
+  egress:
+    # 1. Allow communication to Database pods
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres-db
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # 2. Allow CoreDNS queries (critical so pods can resolve internal DNS)
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
