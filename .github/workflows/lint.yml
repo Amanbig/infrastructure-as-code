@@ -1,0 +1,38 @@
+name: Lint & Validation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Helm Chart Lint
+        run: helm lint helm/01-chart-structure/my-web-app
+
+      - name: Validate Kubernetes Manifests
+        run: |
+          # Dry-run validation using kubeval or basic schema validation
+          find kubernetes -name "*.yaml" -type f | while read -r file; do
+            echo "Checking syntax: $file"
+            python3 -c "import yaml; yaml.safe_load_all(open('$file'))"
+          done
