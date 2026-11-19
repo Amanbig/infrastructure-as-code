@@ -1,0 +1,37 @@
+# ==============================================================================
+# ArgoCD Application: Deploying Helm Charts via GitOps
+# ==============================================================================
+# ArgoCD natively supports Helm! It renders templates client-side and applies
+# the resulting manifests without needing Tiller or a separate Helm CLI.
+# ==============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: production-web-service
+  namespace: argocd
+  labels:
+    tier: production
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Amanbig/infrastructure-as-code.git
+    targetRevision: main
+    path: helm/01-chart-structure/my-web-app
+    helm:
+      # Inject environment-specific value overrides directly
+      valueFiles:
+        - ../../02-environments/values-prod.yaml
+      values: |
+        replicaCount: 5
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

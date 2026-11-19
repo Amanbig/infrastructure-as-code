@@ -1,0 +1,60 @@
+# ==============================================================================
+# GitLab CI/CD Production Pipeline Configuration
+# ==============================================================================
+
+stages:
+  - lint
+  - test
+  - build
+  - scan
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+# 1. Linting Stage
+lint:terraform:
+  stage: lint
+  image: hashicorp/terraform:1.5
+  script:
+    - terraform fmt -check -recursive terraform/
+
+lint:helm:
+  stage: lint
+  image: alpine/helm:3.14.0
+  script:
+    - helm lint helm/01-chart-structure/my-web-app
+
+# 2. Build Stage (Docker in Docker)
+build:image:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t $CONTAINER_RELEASE_IMAGE -f docker/01-dockerfiles/Dockerfile.golang .
+    - docker push $CONTAINER_RELEASE_IMAGE
+
+# 3. Security Scanning Stage
+scan:trivy:
+  stage: scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy image --severity HIGH,CRITICAL --no-progress $CONTAINER_RELEASE_IMAGE
+
+# 4. Deploy Stage (Production with Manual Approval Gate)
+deploy:production:
+  stage: deploy
+  image: alpine/helm:3.14.0
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual # Requires manual click to promote to production
+  script:
+    - echo "Deploying Helm release to production cluster..."
+    - helm upgrade --install my-app helm/01-chart-structure/my-web-app -f helm/02-environments/values-prod.yaml --namespace prod

@@ -1,0 +1,52 @@
+# ==============================================================================
+# Multi-Stage Node.js Production Dockerfile
+# ==============================================================================
+# Highlights:
+# 1. Multi-stage build separates build tools from runtime footprint.
+# 2. Layer caching optimization (copy package*.json first).
+# 3. Drops root privileges using built-in 'node' user.
+# 4. Uses minimal 'node:20-alpine' base image for small attack surface.
+# ==============================================================================
+
+# Stage 1: Build & Dependencies
+FROM node:20-alpine AS builder
+
+WORKDIR /usr/src/app
+
+# Install dependencies separately to leverage Docker layer caching
+COPY package*.json ./
+RUN npm ci --only=production && cp -R node_modules prod_node_modules
+RUN npm ci
+
+# Copy application source code
+COPY . .
+
+# Build step (TypeScript compilation / asset bundling if applicable)
+RUN npm run build --if-present
+
+# ------------------------------------------------------------------------------
+# Stage 2: Minimal Production Runtime
+# ------------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+
+WORKDIR /usr/src/app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Copy production dependencies and compiled build artifacts from builder stage
+COPY --from=builder /usr/src/app/prod_node_modules ./node_modules
+COPY --from=builder /usr/src/app/package*.json ./
+COPY --from=builder /usr/src/app/dist ./dist
+
+# Run as non-root user for security hardening
+USER node
+
+EXPOSE 3000
+
+# Health check instructions
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
+
+CMD ["node", "dist/main.js"]

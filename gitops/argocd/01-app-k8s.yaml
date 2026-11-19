@@ -1,0 +1,47 @@
+# ==============================================================================
+# ArgoCD Application: Tracking Raw Kubernetes Manifests
+# ==============================================================================
+# This Application CR tells ArgoCD to reconcile the live cluster state against
+# the manifests stored in git under 'kubernetes/01-basics'.
+#
+# Features:
+# - Automated Sync: Automatically applies changes when Git commits occur
+# - Self-Heal: Reverts manual edits made directly in cluster (Prevents drift!)
+# - Prune: Automatically removes resources deleted from Git
+# ==============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k8s-basics-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # Source: Git repository details
+  source:
+    repoURL: https://github.com/Amanbig/infrastructure-as-code.git
+    targetRevision: main
+    path: kubernetes/01-basics
+
+  # Destination: Where to deploy the resources
+  destination:
+    server: https://kubernetes.default.svc # In-cluster default
+    namespace: default
+
+  # Sync policy configuration
+  syncPolicy:
+    automated:
+      prune: true     # Deletes cluster resources removed from Git
+      selfHeal: true  # Reverts manual kubectl changes back to Git desired state
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

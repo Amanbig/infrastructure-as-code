@@ -1,0 +1,53 @@
+# ==============================================================================
+# ArgoCD ApplicationSet: Multi-Environment Automated Generation
+# ==============================================================================
+# What is an ApplicationSet?
+# ApplicationSets use generators (e.g. List, Cluster, Git Directory) to automatically
+# produce and maintain multiple ArgoCD Application instances from a single template.
+#
+# Here, a List Generator creates:
+# - dev-web-app (using values-dev.yaml in dev namespace)
+# - staging-web-app (using values-staging.yaml in staging namespace)
+# - prod-web-app (using values-prod.yaml in prod namespace)
+# ==============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-env-web-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: development
+            valuesFile: values-dev.yaml
+          - env: staging
+            namespace: staging
+            valuesFile: values-staging.yaml
+          - env: prod
+            namespace: production
+            valuesFile: values-prod.yaml
+
+  template:
+    metadata:
+      name: "{{env}}-web-app"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Amanbig/infrastructure-as-code.git
+        targetRevision: main
+        path: helm/01-chart-structure/my-web-app
+        helm:
+          valueFiles:
+            - "../../02-environments/{{valuesFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

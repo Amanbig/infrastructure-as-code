@@ -1,0 +1,48 @@
+# ==============================================================================
+# ArgoCD AppProject: Multi-Tenancy & Security Boundaries
+# ==============================================================================
+# Projects provide logical groupings of Applications to isolate teams and environments.
+# They allow administrators to restrict:
+# - Allowed source repositories (preventing unauthorized repos)
+# - Target deployment clusters and namespaces
+# - Permitted/denied cluster-level and namespaced resources
+# ==============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-team-project
+  namespace: argocd
+spec:
+  description: "Restricted project boundary for core web applications"
+
+  # Allowed Git repositories
+  sourceRepos:
+    - "https://github.com/Amanbig/infrastructure-as-code.git"
+
+  # Allowed destination clusters and namespaces
+  destinations:
+    - server: "https://kubernetes.default.svc"
+      namespace: "development"
+    - server: "https://kubernetes.default.svc"
+      namespace: "staging"
+    - server: "https://kubernetes.default.svc"
+      namespace: "production"
+
+  # Allowed cluster-scoped resources (empty list blocks cluster-level resources)
+  clusterResourceWhitelist: []
+
+  # Allowed namespaced resources
+  namespaceResourceWhitelist:
+    - group: "apps"
+      kind: "Deployment"
+    - group: "apps"
+      kind: "StatefulSet"
+    - group: ""
+      kind: "Service"
+    - group: ""
+      kind: "ConfigMap"
+    - group: "networking.k8s.io"
+      kind: "Ingress"
+    - group: "autoscaling"
+      kind: "HorizontalPodAutoscaler"
